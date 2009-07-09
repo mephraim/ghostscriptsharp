@@ -1,0 +1,36 @@
+GhostscriptSharp
+================
+
+GhostscriptSharp is a simple C# wrapper for the Ghostscript library.
+
+
+Using GhostscriptSharp
+======================
+
+The GhostscriptWrapper class contains 2 static methods that can be used to generate jpg images from a PDF file.
+
+* GeneratePageThumb(string inputPath, string outputPath, int page, int width, int height)
+
+- Generates a thumbnail from a single page of the target PDF
+
+= Parameters
+
+-- inputPath = a path to the PDF file
+-- outputPath = the path where you would like the output jpg
+-- page = the page number for the page you want to create an image from
+-- width = the width of the image
+-- height = the height of the image
+
+* GeneratePageThumbs(string inputPath, string outputPath, int firstPage, int lastPage, int width, int height)
+
+- Generates a collection of thumbnail jpgs for the PDF at the input path, starting with firstPage and ending with lastPage. 
+
+= Parameters
+
+-- inputPath = a path to the PDF file
+-- ouputPath = the path where you would like the output jpgs to go (put '%d' somewhere in the path to have the jpgs numbered)
+-- firstPage = the first page to start generating the thumbnails from
+-- lastPage = the last page to end the thumbnail generator
+-- width = the width of the image
+-- height = the height of the image
+
