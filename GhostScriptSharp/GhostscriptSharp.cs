@@ -4,24 +4,24 @@ using System.Runtime.InteropServices;
 
 namespace GhostscriptSharp
 {
-    /// <summary>
-    /// Wraps the Ghostscript API with a C# interface
-    /// </summary>
-    public class GhostscriptWrapper
-    {
-        #region Hooks into Ghostscript DLL
-        [DllImport("gsdll32.dll", EntryPoint = "gsapi_new_instance")]
-        private static extern int CreateAPIInstance(out IntPtr pinstance, IntPtr caller_handle);
+	/// <summary>
+	/// Wraps the Ghostscript API with a C# interface
+	/// </summary>
+	public class GhostscriptWrapper
+	{
+		#region Hooks into Ghostscript DLL
+		[DllImport("gsdll32.dll", EntryPoint = "gsapi_new_instance")]
+		private static extern int CreateAPIInstance(out IntPtr pinstance, IntPtr caller_handle);
 
-        [DllImport("gsdll32.dll", EntryPoint = "gsapi_init_with_args")]
-        private static extern int InitAPI(IntPtr instance, int argc, string[] argv);
+		[DllImport("gsdll32.dll", EntryPoint = "gsapi_init_with_args")]
+		private static extern int InitAPI(IntPtr instance, int argc, string[] argv);
 
-        [DllImport("gsdll32.dll", EntryPoint = "gsapi_exit")]
-        private static extern int ExitAPI(IntPtr instance);
+		[DllImport("gsdll32.dll", EntryPoint = "gsapi_exit")]
+		private static extern int ExitAPI(IntPtr instance);
 
-        [DllImport("gsdll32.dll", EntryPoint = "gsapi_delete_instance")]
-        private static extern void DeleteAPIInstance(IntPtr instance);
-        #endregion
+		[DllImport("gsdll32.dll", EntryPoint = "gsapi_delete_instance")]
+		private static extern void DeleteAPIInstance(IntPtr instance);
+		#endregion
 
 		#region Globals
 
@@ -46,23 +46,23 @@ namespace GhostscriptSharp
 		#endregion
 
 		/// <summary>
-        /// Generates a thumbnail jpg for the pdf at the input path and saves it 
-        /// at the output path
-        /// </summary>
-        public static void GeneratePageThumb(string inputPath, string outputPath, int page, int width, int height)
-        {
-            GeneratePageThumbs(inputPath, outputPath, page, page, width, height);
-        }
+		/// Generates a thumbnail jpg for the pdf at the input path and saves it 
+		/// at the output path
+		/// </summary>
+		public static void GeneratePageThumb(string inputPath, string outputPath, int page, int width, int height)
+		{
+			GeneratePageThumbs(inputPath, outputPath, page, page, width, height);
+		}
 
-        /// <summary>
-        /// Generates a collection of thumbnail jpgs for the pdf at the input path 
-        /// starting with firstPage and ending with lastPage.
-        /// Put "%d" somewhere in the output path to have each of the pages numbered
-        /// </summary>
-        public static void GeneratePageThumbs(string inputPath, string outputPath, int firstPage, int lastPage, int width, int height)
-        {
-            CallAPI(GetArgs(inputPath, outputPath, firstPage, lastPage, width, height));
-        }
+		/// <summary>
+		/// Generates a collection of thumbnail jpgs for the pdf at the input path 
+		/// starting with firstPage and ending with lastPage.
+		/// Put "%d" somewhere in the output path to have each of the pages numbered
+		/// </summary>
+		public static void GeneratePageThumbs(string inputPath, string outputPath, int firstPage, int lastPage, int width, int height)
+		{
+			CallAPI(GetArgs(inputPath, outputPath, firstPage, lastPage, width, height));
+		}
 
 		/// <summary>
 		/// Rasterises a PDF into selected format
@@ -75,17 +75,17 @@ namespace GhostscriptSharp
 			CallAPI(GetArgs(inputPath, outputPath, settings));
 		}
 
-        /// <summary>
-        /// Calls the Ghostscript API with a collection of arguments to be passed to it
-        /// </summary>
-        private static void CallAPI(string[] args)
-        {
+		/// <summary>
+		/// Calls the Ghostscript API with a collection of arguments to be passed to it
+		/// </summary>
+		private static void CallAPI(string[] args)
+		{
 			// Get a pointer to an instance of the Ghostscript API and run the API with the current arguments
 			IntPtr gsInstancePtr;
 			CreateAPIInstance(out gsInstancePtr, IntPtr.Zero);
 			try
 			{
-				
+
 				int result = InitAPI(gsInstancePtr, args.Length, args);
 
 				if (result < 0)
@@ -98,31 +98,31 @@ namespace GhostscriptSharp
 			{
 				Cleanup(gsInstancePtr);
 			}
-        }
+		}
 
-        /// <summary>
-        /// Frees up the memory used for the API arguments and clears the Ghostscript API instance
-        /// </summary>
-        private static void Cleanup(IntPtr gsInstancePtr)
-        {
-            ExitAPI(gsInstancePtr);
-            DeleteAPIInstance(gsInstancePtr);
-        }
+		/// <summary>
+		/// Frees up the memory used for the API arguments and clears the Ghostscript API instance
+		/// </summary>
+		private static void Cleanup(IntPtr gsInstancePtr)
+		{
+			ExitAPI(gsInstancePtr);
+			DeleteAPIInstance(gsInstancePtr);
+		}
 
-        /// <summary>
-        /// Returns an array of arguments to be sent to the Ghostscript API
-        /// </summary>
-        /// <param name="inputPath">Path to the source file</param>
-        /// <param name="outputPath">Path to the output file</param>
-        /// <param name="firstPage">The page of the file to start on</param>
-        /// <param name="lastPage">The page of the file to end on</param>
-        private static string[] GetArgs(string inputPath, 
-			string outputPath, 
-			int firstPage, 
-			int lastPage, 
-			int width, 
+		/// <summary>
+		/// Returns an array of arguments to be sent to the Ghostscript API
+		/// </summary>
+		/// <param name="inputPath">Path to the source file</param>
+		/// <param name="outputPath">Path to the output file</param>
+		/// <param name="firstPage">The page of the file to start on</param>
+		/// <param name="lastPage">The page of the file to end on</param>
+		private static string[] GetArgs(string inputPath,
+			string outputPath,
+			int firstPage,
+			int lastPage,
+			int width,
 			int height)
-        {
+		{
 			// To maintain backwards compatibility, this method uses previous hardcoded values.
 
 			GhostscriptSettings s = new GhostscriptSettings();
@@ -132,7 +132,7 @@ namespace GhostscriptSharp
 			s.Resolution = new System.Drawing.Size(width, height);
 
 			return GetArgs(inputPath, outputPath, s);
-        }
+		}
 
 		/// <summary>
 		/// Returns an array of arguments to be sent to the Ghostscript API
@@ -206,7 +206,7 @@ namespace GhostscriptSharp
 			return (string[])args.ToArray(typeof(string));
 
 		}
-    }
+	}
 
 	/// <summary>
 	/// Ghostscript settings
@@ -372,4 +372,8 @@ namespace GhostscriptSharp.Settings
 			set
 			{
 				this._fixed = GhostscriptPageSizes.UNDEFINED;
-				this._manual = value;%0
+				this._manual = value;
+			}
+			get
+			{
+				return this._manual;%0
