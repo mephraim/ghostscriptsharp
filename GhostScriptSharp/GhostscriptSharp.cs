@@ -376,4 +376,11 @@ namespace GhostscriptSharp.Settings
 			}
 			get
 			{
-				return this._manual;%0
+				return this._manual;
+			}
+		}
+
+		/// <summary>
+		/// Standard paper size
+		/// </summary>
+	
