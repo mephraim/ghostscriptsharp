@@ -382,5 +382,4 @@ namespace GhostscriptSharp.Settings
 
 		/// <summary>
 		/// Standard paper size
-		/// </summary>
-	
+		%
