@@ -82,23 +82,33 @@ namespace GhostscriptSharp
 		{
 			// Get a pointer to an instance of the Ghostscript API and run the API with the current arguments
 			IntPtr gsInstancePtr;
-			CreateAPIInstance(out gsInstancePtr, IntPtr.Zero);
-			try
+			lock (resourceLock)
 			{
-
-				int result = InitAPI(gsInstancePtr, args.Length, args);
-
-				if (result < 0)
+				CreateAPIInstance(out gsInstancePtr, IntPtr.Zero);
+				try
 				{
-					throw new ExternalException("Ghostscript conversion error", result);
-				}
 
-			}
-			finally
-			{
-				Cleanup(gsInstancePtr);
+					
+
+					int result = InitAPI(gsInstancePtr, args.Length, args);
+
+					if (result < 0)
+					{
+						throw new ExternalException("Ghostscript conversion error", result);
+					}
+
+				}
+				finally
+				{
+					Cleanup(gsInstancePtr);
+				}
 			}
 		}
+
+		/// <summary>
+		/// GS can only support a single instance, so we need to bottleneck any multi-threaded systems.
+		/// </summary>
+		private static object resourceLock = new object();
 
 		/// <summary>
 		/// Frees up the memory used for the API arguments and clears the Ghostscript API instance
@@ -382,4 +392,82 @@ namespace GhostscriptSharp.Settings
 
 		/// <summary>
 		/// Standard paper size
-		%
+		/// </summary>
+		public GhostscriptPageSizes Native
+		{
+			set
+			{
+				this._fixed = value;
+				this._manual = new System.Drawing.Size(0, 0);
+			}
+			get
+			{
+				return this._fixed;
+			}
+		}
+
+	}
+
+	/// <summary>
+	/// Native page sizes
+	/// </summary>
+	/// <remarks>
+	/// Missing 11x17 as enums can't start with a number, and I can't be bothered
+	/// to add in logic to handle it - if you need it, do it yourself.
+	/// </remarks>
+	public enum GhostscriptPageSizes
+	{
+		UNDEFINED,
+		ledger,
+		legal,
+		letter,
+		lettersmall,
+		archE,
+		archD,
+		archC,
+		archB,
+		archA,
+		a0,
+		a1,
+		a2,
+		a3,
+		a4,
+		a4small,
+		a5,
+		a6,
+		a7,
+		a8,
+		a9,
+		a10,
+		isob0,
+		isob1,
+		isob2,
+		isob3,
+		isob4,
+		isob5,
+		isob6,
+		c0,
+		c1,
+		c2,
+		c3,
+		c4,
+		c5,
+		c6,
+		jisb0,
+		jisb1,
+		jisb2,
+		jisb3,
+		jisb4,
+		jisb5,
+		jisb6,
+		b0,
+		b1,
+		b2,
+		b3,
+		b4,
+		b5,
+		flsa,
+		flse,
+		halfletter
+	}
+}
