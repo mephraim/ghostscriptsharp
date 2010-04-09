@@ -87,16 +87,12 @@ namespace GhostscriptSharp
 				CreateAPIInstance(out gsInstancePtr, IntPtr.Zero);
 				try
 				{
-
-					
-
 					int result = InitAPI(gsInstancePtr, args.Length, args);
 
 					if (result < 0)
 					{
 						throw new ExternalException("Ghostscript conversion error", result);
 					}
-
 				}
 				finally
 				{
@@ -140,6 +136,10 @@ namespace GhostscriptSharp
 			s.Page.Start = firstPage;
 			s.Page.End = lastPage;
 			s.Resolution = new System.Drawing.Size(width, height);
+			
+			Settings.GhostscriptPageSize pageSize = new Settings.GhostscriptPageSize();
+			pageSize.Native = GhostscriptSharp.Settings.GhostscriptPageSizes.a7;
+			s.Size = pageSize;
 
 			return GetArgs(inputPath, outputPath, s);
 		}
