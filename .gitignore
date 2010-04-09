@@ -1,3 +1,6 @@
-Tests/*.suo
-*/bin/*
-*/obj/*
+*.sln
+**/*.suo
+**/bin
+**/obj
+**/**/bin
+**/**/obj
