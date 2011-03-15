@@ -10,18 +10,18 @@ See the [Ghostscript API Documentation](http://pages.cs.wisc.edu/~ghost/doc/cvs/
 
 See the GhostscriptSharpExamples solution for ports of the Example code shown on the API page.
 
-`Int32 GetRevision(out GS_Revision pr, Int32 len)
-`Int32 CreateAPIInstance(out IntPtr pinstance, IntPtr caller_handle)
-`void DeleteAPIInstance(IntPtr instance)
-`Int32 Set_Stdio(IntPtr instance, StdinCallback stdin, StdoutCallback stdout, StdoutCallback stderr)
-`Int32 InitAPI(IntPtr instance, Int32 argc, string[] argv)
-`Int32 RunStringBegin(IntPtr instance, Int32 user_errors, out Int32 pexit_code)
-`Int32 RunStringContinue(IntPtr instance, String str, UInt32 length, Int32 user_errors, out Int32 pexit_code)
-`Int32 RunStringEnd(IntPtr instance, Int32 user_errors, out Int32 pexit_code)
-`Int32 RunStringWithLength(IntPtr instance, String str, UInt32 length, Int32 user_errors, out Int32 pexit_code)
-`Int32 RunString(IntPtr instance, String str, Int32 user_errors, out Int32 pexit_code)
-`Int32 RunFile(IntPtr instance, String file_name, Int32 user_errors, out Int32 pexit_code)
-`Int32 ExitAPI(IntPtr instance)
+`Int32 GetRevision(out GS_Revision pr, Int32 len)`
+`Int32 CreateAPIInstance(out IntPtr pinstance, IntPtr caller_handle)`
+`void DeleteAPIInstance(IntPtr instance)`
+`Int32 Set_Stdio(IntPtr instance, StdinCallback stdin, StdoutCallback stdout, StdoutCallback stderr)`
+`Int32 InitAPI(IntPtr instance, Int32 argc, string[] argv)`
+`Int32 RunStringBegin(IntPtr instance, Int32 user_errors, out Int32 pexit_code)`
+`Int32 RunStringContinue(IntPtr instance, String str, UInt32 length, Int32 user_errors, out Int32 pexit_code)`
+`Int32 RunStringEnd(IntPtr instance, Int32 user_errors, out Int32 pexit_code)`
+`Int32 RunStringWithLength(IntPtr instance, String str, UInt32 length, Int32 user_errors, out Int32 pexit_code)`
+`Int32 RunString(IntPtr instance, String str, Int32 user_errors, out Int32 pexit_code)`
+`Int32 RunFile(IntPtr instance, String file_name, Int32 user_errors, out Int32 pexit_code)`
+`Int32 ExitAPI(IntPtr instance)`
 
 # Using GhostscriptWrapper
 The GhostscriptWrapper class contains 3 static methods that can be used to generate jpg images from a PDF file.
@@ -76,7 +76,7 @@ The GhostscriptManager class provides an OO interface to converting files and ob
 * Use the **Settings** property to specify the output device, page size, and other parameters
 * Use the **StdOut** and **StdErr** events to obtain Ghostscript output
 
-`void DoConvert(String outputPath, params String[] inputPaths)
+`void DoConvert(String outputPath, params String[] inputPaths)`
 
 ### Parameters
 * **outputPath** The path where you would like your converted file(s) saved. Put "%d" somewhere in the path to generate multiple numbered files.
