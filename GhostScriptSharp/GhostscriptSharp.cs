@@ -1,28 +1,36 @@
+﻿/* ================================= MIT LICENSE =================================
+ * 
+ * Copyright (c) 2009 Matthew Ephraim
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * 
+ * ================================= MIT LICENSE ================================= */
+
+/* ===============================================================================
+ * 
+ * This code taken from Matthew Ephraim's GhostscriptSharp February 2011
+ * 
+ * https://github.com/mephraim/ghostscriptsharp/blob/master/GhostScriptSharp/GhostscriptSharp.cs
+ * 
+ * =============================================================================== */
+
 using System;
+using System.Collections.Generic;
+
 using System.Text;
 using System.Runtime.InteropServices;
 
 namespace GhostscriptSharp
 {
-	/// <summary>
-	/// Wraps the Ghostscript API with a C# interface
-	/// </summary>
-	public class GhostscriptWrapper
-	{
-		#region Hooks into Ghostscript DLL
-		[DllImport("gsdll32.dll", EntryPoint = "gsapi_new_instance")]
-		private static extern int CreateAPIInstance(out IntPtr pinstance, IntPtr caller_handle);
-
-		[DllImport("gsdll32.dll", EntryPoint = "gsapi_init_with_args")]
-		private static extern int InitAPI(IntPtr instance, int argc, string[] argv);
-
-		[DllImport("gsdll32.dll", EntryPoint = "gsapi_exit")]
-		private static extern int ExitAPI(IntPtr instance);
-
-		[DllImport("gsdll32.dll", EntryPoint = "gsapi_delete_instance")]
-		private static extern void DeleteAPIInstance(IntPtr instance);
-		#endregion
-
+   /// <summary>
+   /// Wraps the Ghostscript API with a C# interface
+   /// </summary>
+   public class GhostscriptWrapper
+   {
 		#region Globals
 
 		private static readonly string[] ARGS = new string[] {
@@ -84,10 +92,10 @@ namespace GhostscriptSharp
 			IntPtr gsInstancePtr;
 			lock (resourceLock)
 			{
-				CreateAPIInstance(out gsInstancePtr, IntPtr.Zero);
+				API.CreateAPIInstance(out gsInstancePtr, IntPtr.Zero);
 				try
 				{
-					int result = InitAPI(gsInstancePtr, args.Length, args);
+					int result = API.InitAPI(gsInstancePtr, args.Length, args);
 
 					if (result < 0)
 					{
@@ -111,8 +119,8 @@ namespace GhostscriptSharp
 		/// </summary>
 		private static void Cleanup(IntPtr gsInstancePtr)
 		{
-			ExitAPI(gsInstancePtr);
-			DeleteAPIInstance(gsInstancePtr);
+			API.ExitAPI(gsInstancePtr);
+			API.DeleteAPIInstance(gsInstancePtr);
 		}
 
 		/// <summary>
@@ -136,7 +144,7 @@ namespace GhostscriptSharp
 			s.Page.Start = firstPage;
 			s.Page.End = lastPage;
 			s.Resolution = new System.Drawing.Size(width, height);
-			
+
 			Settings.GhostscriptPageSize pageSize = new Settings.GhostscriptPageSize();
 			pageSize.Native = GhostscriptSharp.Settings.GhostscriptPageSizes.a7;
 			s.Size = pageSize;
@@ -216,258 +224,5 @@ namespace GhostscriptSharp
 			return (string[])args.ToArray(typeof(string));
 
 		}
-	}
-
-	/// <summary>
-	/// Ghostscript settings
-	/// </summary>
-	public class GhostscriptSettings
-	{
-		private Settings.GhostscriptDevices _device;
-		private Settings.GhostscriptPages _pages = new Settings.GhostscriptPages();
-		private System.Drawing.Size _resolution;
-		private Settings.GhostscriptPageSize _size = new Settings.GhostscriptPageSize();
-
-		public Settings.GhostscriptDevices Device
-		{
-			get { return this._device; }
-			set { this._device = value; }
-		}
-
-		public Settings.GhostscriptPages Page
-		{
-			get { return this._pages; }
-			set { this._pages = value; }
-		}
-
-		public System.Drawing.Size Resolution
-		{
-			get { return this._resolution; }
-			set { this._resolution = value; }
-		}
-
-		public Settings.GhostscriptPageSize Size
-		{
-			get { return this._size; }
-			set { this._size = value; }
-		}
-	}
-}
-
-namespace GhostscriptSharp.Settings
-{
-	/// <summary>
-	/// Which pages to output
-	/// </summary>
-	public class GhostscriptPages
-	{
-		private bool _allPages = true;
-		private int _start;
-		private int _end;
-
-		/// <summary>
-		/// Output all pages avaialble in document
-		/// </summary>
-		public bool AllPages
-		{
-			set
-			{
-				this._start = -1;
-				this._end = -1;
-				this._allPages = true;
-			}
-			get
-			{
-				return this._allPages;
-			}
-		}
-
-		/// <summary>
-		/// Start output at this page (1 for page 1)
-		/// </summary>
-		public int Start
-		{
-			set
-			{
-				this._allPages = false;
-				this._start = value;
-			}
-			get
-			{
-				return this._start;
-			}
-		}
-
-		/// <summary>
-		/// Page to stop output at
-		/// </summary>
-		public int End
-		{
-			set
-			{
-				this._allPages = false;
-				this._end = value;
-			}
-			get
-			{
-				return this._end;
-			}
-		}
-	}
-
-	/// <summary>
-	/// Output devices for GhostScript
-	/// </summary>
-	public enum GhostscriptDevices
-	{
-		UNDEFINED,
-		png16m,
-		pnggray,
-		png256,
-		png16,
-		pngmono,
-		pngalpha,
-		jpeg,
-		jpeggray,
-		tiffgray,
-		tiff12nc,
-		tiff24nc,
-		tiff32nc,
-		tiffsep,
-		tiffcrle,
-		tiffg3,
-		tiffg32d,
-		tiffg4,
-		tifflzw,
-		tiffpack,
-		faxg3,
-		faxg32d,
-		faxg4,
-		bmpmono,
-		bmpgray,
-		bmpsep1,
-		bmpsep8,
-		bmp16,
-		bmp256,
-		bmp16m,
-		bmp32b,
-		pcxmono,
-		pcxgray,
-		pcx16,
-		pcx256,
-		pcx24b,
-		pcxcmyk,
-		psdcmyk,
-		psdrgb,
-		pdfwrite,
-		pswrite,
-		epswrite,
-		pxlmono,
-		pxlcolor
-	}
-
-	/// <summary>
-	/// Output document physical dimensions
-	/// </summary>
-	public class GhostscriptPageSize
-	{
-		private GhostscriptPageSizes _fixed;
-		private System.Drawing.Size _manual;
-
-		/// <summary>
-		/// Custom document size
-		/// </summary>
-		public System.Drawing.Size Manual
-		{
-			set
-			{
-				this._fixed = GhostscriptPageSizes.UNDEFINED;
-				this._manual = value;
-			}
-			get
-			{
-				return this._manual;
-			}
-		}
-
-		/// <summary>
-		/// Standard paper size
-		/// </summary>
-		public GhostscriptPageSizes Native
-		{
-			set
-			{
-				this._fixed = value;
-				this._manual = new System.Drawing.Size(0, 0);
-			}
-			get
-			{
-				return this._fixed;
-			}
-		}
-
-	}
-
-	/// <summary>
-	/// Native page sizes
-	/// </summary>
-	/// <remarks>
-	/// Missing 11x17 as enums can't start with a number, and I can't be bothered
-	/// to add in logic to handle it - if you need it, do it yourself.
-	/// </remarks>
-	public enum GhostscriptPageSizes
-	{
-		UNDEFINED,
-		ledger,
-		legal,
-		letter,
-		lettersmall,
-		archE,
-		archD,
-		archC,
-		archB,
-		archA,
-		a0,
-		a1,
-		a2,
-		a3,
-		a4,
-		a4small,
-		a5,
-		a6,
-		a7,
-		a8,
-		a9,
-		a10,
-		isob0,
-		isob1,
-		isob2,
-		isob3,
-		isob4,
-		isob5,
-		isob6,
-		c0,
-		c1,
-		c2,
-		c3,
-		c4,
-		c5,
-		c6,
-		jisb0,
-		jisb1,
-		jisb2,
-		jisb3,
-		jisb4,
-		jisb5,
-		jisb6,
-		b0,
-		b1,
-		b2,
-		b3,
-		b4,
-		b5,
-		flsa,
-		flse,
-		halfletter
 	}
 }
