@@ -46,6 +46,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="API\GhostScript32.cs" />
+    <Compile Include="API\GhostScript64.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="GhostscriptSharp.cs" />
   </ItemGroup>
