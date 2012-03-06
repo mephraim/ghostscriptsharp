@@ -1,4 +1,5 @@
 using System;
+using System.Drawing;
 using System.Text;
 using System.Runtime.InteropServices;
 
@@ -31,13 +32,14 @@ namespace GhostscriptSharp
 		};
 		#endregion
 
+
 		/// <summary>
 		/// Generates a thumbnail jpg for the pdf at the input path and saves it 
 		/// at the output path
 		/// </summary>
-		public static void GeneratePageThumb(string inputPath, string outputPath, int page, int width, int height)
+		public static void GeneratePageThumb(string inputPath, string outputPath, int page, int dpix, int dpiy, int width = 0, int height = 0)
 		{
-			GeneratePageThumbs(inputPath, outputPath, page, page, width, height);
+			GeneratePageThumbs(inputPath, outputPath, page, page, dpix, dpiy, width, height);
 		}
 
 		/// <summary>
@@ -45,12 +47,12 @@ namespace GhostscriptSharp
 		/// starting with firstPage and ending with lastPage.
 		/// Put "%d" somewhere in the output path to have each of the pages numbered
 		/// </summary>
-		public static void GeneratePageThumbs(string inputPath, string outputPath, int firstPage, int lastPage, int width, int height)
+		public static void GeneratePageThumbs(string inputPath, string outputPath, int firstPage, int lastPage, int dpix, int dpiy, int width = 0, int height = 0)
 		{
             if (IntPtr.Size == 4)
-                API.GhostScript32.CallAPI(GetArgs(inputPath, outputPath, firstPage, lastPage, width, height));
+                API.GhostScript32.CallAPI(GetArgs(inputPath, outputPath, firstPage, lastPage, dpix, dpiy, width, height));
             else
-                API.GhostScript64.CallAPI(GetArgs(inputPath, outputPath, firstPage, lastPage, width, height));
+                API.GhostScript64.CallAPI(GetArgs(inputPath, outputPath, firstPage, lastPage, dpix, dpiy, width, height));
 		}
 
 		/// <summary>
@@ -78,8 +80,10 @@ namespace GhostscriptSharp
 			string outputPath,
 			int firstPage,
 			int lastPage,
-			int width,
-			int height)
+			int dpix,
+			int dpiy, 
+            int width, 
+            int height)
 		{
 			// To maintain backwards compatibility, this method uses previous hardcoded values.
 
@@ -87,11 +91,18 @@ namespace GhostscriptSharp
 			s.Device = Settings.GhostscriptDevices.jpeg;
 			s.Page.Start = firstPage;
 			s.Page.End = lastPage;
-			s.Resolution = new System.Drawing.Size(width, height);
+			s.Resolution = new System.Drawing.Size(dpix, dpiy);
 			
 			Settings.GhostscriptPageSize pageSize = new Settings.GhostscriptPageSize();
-			pageSize.Native = GhostscriptSharp.Settings.GhostscriptPageSizes.a7;
-			s.Size = pageSize;
+            if (width == 0 && height == 0)
+            {
+			    pageSize.Native = GhostscriptSharp.Settings.GhostscriptPageSizes.a7;
+            }
+            else
+            {
+                pageSize.Manual = new Size(width, height);
+            }
+            s.Size = pageSize;
 
 			return GetArgs(inputPath, outputPath, s);
 		}
@@ -151,6 +162,8 @@ namespace GhostscriptSharp
 			{
 				args.Add(String.Format("-dDEVICEWIDTHPOINTS={0}", settings.Size.Manual.Width));
 				args.Add(String.Format("-dDEVICEHEIGHTPOINTS={0}", settings.Size.Manual.Height));
+                args.Add("-dFIXEDMEDIA");
+                args.Add("-dPDFFitPage");
 			}
 			else
 			{
