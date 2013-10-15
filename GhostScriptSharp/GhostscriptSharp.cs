@@ -1,4 +1,5 @@
 using System;
+using System.Drawing;
 using System.Text;
 using System.Runtime.InteropServices;
 
@@ -9,20 +10,6 @@ namespace GhostscriptSharp
 	/// </summary>
 	public class GhostscriptWrapper
 	{
-		#region Hooks into Ghostscript DLL
-		[DllImport("gsdll32.dll", EntryPoint = "gsapi_new_instance")]
-		private static extern int CreateAPIInstance(out IntPtr pinstance, IntPtr caller_handle);
-
-		[DllImport("gsdll32.dll", EntryPoint = "gsapi_init_with_args")]
-		private static extern int InitAPI(IntPtr instance, int argc, string[] argv);
-
-		[DllImport("gsdll32.dll", EntryPoint = "gsapi_exit")]
-		private static extern int ExitAPI(IntPtr instance);
-
-		[DllImport("gsdll32.dll", EntryPoint = "gsapi_delete_instance")]
-		private static extern void DeleteAPIInstance(IntPtr instance);
-		#endregion
-
 		#region Globals
 
 		private static readonly string[] ARGS = new string[] {
@@ -45,13 +32,14 @@ namespace GhostscriptSharp
 		};
 		#endregion
 
+
 		/// <summary>
 		/// Generates a thumbnail jpg for the pdf at the input path and saves it 
 		/// at the output path
 		/// </summary>
-		public static void GeneratePageThumb(string inputPath, string outputPath, int page, int width, int height)
+		public static void GeneratePageThumb(string inputPath, string outputPath, int page, int dpix, int dpiy, int width = 0, int height = 0)
 		{
-			GeneratePageThumbs(inputPath, outputPath, page, page, width, height);
+			GeneratePageThumbs(inputPath, outputPath, page, page, dpix, dpiy, width, height);
 		}
 
 		/// <summary>
@@ -59,9 +47,12 @@ namespace GhostscriptSharp
 		/// starting with firstPage and ending with lastPage.
 		/// Put "%d" somewhere in the output path to have each of the pages numbered
 		/// </summary>
-		public static void GeneratePageThumbs(string inputPath, string outputPath, int firstPage, int lastPage, int width, int height)
+		public static void GeneratePageThumbs(string inputPath, string outputPath, int firstPage, int lastPage, int dpix, int dpiy, int width = 0, int height = 0)
 		{
-			CallAPI(GetArgs(inputPath, outputPath, firstPage, lastPage, width, height));
+            if (IntPtr.Size == 4)
+                API.GhostScript32.CallAPI(GetArgs(inputPath, outputPath, firstPage, lastPage, dpix, dpiy, width, height));
+            else
+                API.GhostScript64.CallAPI(GetArgs(inputPath, outputPath, firstPage, lastPage, dpix, dpiy, width, height));
 		}
 
 		/// <summary>
@@ -72,47 +63,10 @@ namespace GhostscriptSharp
 		/// <param name="settings">Conversion settings</param>
 		public static void GenerateOutput(string inputPath, string outputPath, GhostscriptSettings settings)
 		{
-			CallAPI(GetArgs(inputPath, outputPath, settings));
-		}
-
-		/// <summary>
-		/// Calls the Ghostscript API with a collection of arguments to be passed to it
-		/// </summary>
-		private static void CallAPI(string[] args)
-		{
-			// Get a pointer to an instance of the Ghostscript API and run the API with the current arguments
-			IntPtr gsInstancePtr;
-			lock (resourceLock)
-			{
-				CreateAPIInstance(out gsInstancePtr, IntPtr.Zero);
-				try
-				{
-					int result = InitAPI(gsInstancePtr, args.Length, args);
-
-					if (result < 0)
-					{
-						throw new ExternalException("Ghostscript conversion error", result);
-					}
-				}
-				finally
-				{
-					Cleanup(gsInstancePtr);
-				}
-			}
-		}
-
-		/// <summary>
-		/// GS can only support a single instance, so we need to bottleneck any multi-threaded systems.
-		/// </summary>
-		private static object resourceLock = new object();
-
-		/// <summary>
-		/// Frees up the memory used for the API arguments and clears the Ghostscript API instance
-		/// </summary>
-		private static void Cleanup(IntPtr gsInstancePtr)
-		{
-			ExitAPI(gsInstancePtr);
-			DeleteAPIInstance(gsInstancePtr);
+            if (IntPtr.Size == 4)
+                API.GhostScript32.CallAPI(GetArgs(inputPath, outputPath, settings));
+            else
+                API.GhostScript64.CallAPI(GetArgs(inputPath, outputPath, settings));
 		}
 
 		/// <summary>
@@ -126,8 +80,10 @@ namespace GhostscriptSharp
 			string outputPath,
 			int firstPage,
 			int lastPage,
-			int width,
-			int height)
+			int dpix,
+			int dpiy, 
+            int width, 
+            int height)
 		{
 			// To maintain backwards compatibility, this method uses previous hardcoded values.
 
@@ -135,11 +91,18 @@ namespace GhostscriptSharp
 			s.Device = Settings.GhostscriptDevices.jpeg;
 			s.Page.Start = firstPage;
 			s.Page.End = lastPage;
-			s.Resolution = new System.Drawing.Size(width, height);
+			s.Resolution = new System.Drawing.Size(dpix, dpiy);
 			
 			Settings.GhostscriptPageSize pageSize = new Settings.GhostscriptPageSize();
-			pageSize.Native = GhostscriptSharp.Settings.GhostscriptPageSizes.a7;
-			s.Size = pageSize;
+            if (width == 0 && height == 0)
+            {
+			    pageSize.Native = GhostscriptSharp.Settings.GhostscriptPageSizes.a7;
+            }
+            else
+            {
+                pageSize.Manual = new Size(width, height);
+            }
+            s.Size = pageSize;
 
 			return GetArgs(inputPath, outputPath, s);
 		}
@@ -199,6 +162,8 @@ namespace GhostscriptSharp
 			{
 				args.Add(String.Format("-dDEVICEWIDTHPOINTS={0}", settings.Size.Manual.Width));
 				args.Add(String.Format("-dDEVICEHEIGHTPOINTS={0}", settings.Size.Manual.Height));
+                args.Add("-dFIXEDMEDIA");
+                args.Add("-dPDFFitPage");
 			}
 			else
 			{
