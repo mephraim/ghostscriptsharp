@@ -1,6 +1,10 @@
 # GhostscriptSharp
 GhostscriptSharp is a simple C# wrapper for the Ghostscript library.
 
+**DEPRECATED**
+
+Please do not submit new issues or pull requests to this project. 
+
 # Using GhostscriptSharp
 The GhostscriptWrapper class contains 3 static methods that can be used to generate jpg images from a PDF file.
 
